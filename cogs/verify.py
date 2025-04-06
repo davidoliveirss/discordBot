@@ -127,7 +127,7 @@ class suportQuest(ui.Modal, title="Suport system"):
             view = SupportButtonView()
             await channel.send(embed=embed, view=view)
             logger.info(f"Suport request sent by ({user_id})")
-            await interaction.response.send_message("📤 Pedido de suporte enviado, aguarda por uma resposta.", ephemeral=True)
+            await interaction.response.send_message("📤 Pedido de suporte enviado, irás receber uma resposta na tua DM.", ephemeral=True)
             
         except Exception as e:
             logger.error(f"Error processing support request: {e}")
