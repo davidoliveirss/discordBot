@@ -25,24 +25,24 @@ async def load_extensions():
 
     for folder in folders:
         if folder in ["__pycache__", "venv", "logs"]:
-            logger.debug(f"Ignoring the folder: {folder}")
+            logger.info(f"Ignoring the folder: {folder}")
             continue
-        
+
         for path in glob.glob(f"{folder}/**/*.py", recursive=True):
             module_path = os.path.splitext(path)[0]
             module_path = module_path.replace("/", ".").replace("\\", ".")
 
             if module_path in ignore_modules:
                 continue
-        
+
             if "__init__" in module_path or module_path.startswith("._"):
-                logger.debug(f"Ignoring file: {module_path}")
+                logger.info(f"Ignoring file: {module_path}")
                 continue
 
-            logger.debug(f"Loading: {module_path}")
+            logger.info(f"Loading: {module_path}")
             try:
                 await bot.load_extension(module_path)
-                logger.info(f"Cog {module_path} loaded!")  # Log quando a cog for carregada com sucesso
+                logger.info(f"Script {module_path} loaded!")  # Log quando a cog for carregada com sucesso
             except commands.ExtensionAlreadyLoaded:
                 pass
             except Exception as e:
