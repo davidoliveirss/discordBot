@@ -1,8 +1,7 @@
 import discord
 from discord.ext import commands
 from discord.ui import View, Select
-import os
-from logs import get_logger
+from core.logs import get_logger
 
 logger = get_logger()
 

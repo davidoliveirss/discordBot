@@ -1,6 +1,6 @@
 from discord.ext import commands
 import os
-from logs import get_logger
+from core.logs import get_logger
 
 logger = get_logger()
 

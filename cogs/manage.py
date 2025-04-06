@@ -1,10 +1,9 @@
 import discord
-import random
 from discord import ui
 from discord.ext import commands
 from discord.ui import View, Button
 from datetime import datetime, timedelta
-from logs import get_logger
+from core.logs import get_logger
 import os
 import pwd
 import socket

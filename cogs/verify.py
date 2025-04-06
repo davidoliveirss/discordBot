@@ -3,13 +3,11 @@ from discord import ui
 from discord.ext import commands
 from discord.ui import View, Button
 from datetime import datetime, timedelta
-from logs import get_logger
+from core.logs import get_logger
 import secrets
 import string
-import mysql.connector
 from mysql.connector import Error
-import asyncio
-from cogs.database import create_connection
+from core.database import create_connection
 
 logger = get_logger()
 
