@@ -162,8 +162,38 @@ class SupportButtonView(View):
         embed = interaction.message.embeds[0]
         embed.color = discord.Color.green()
         embed.add_field(name="Resolvido por", value=f"{interaction.user.mention}", inline=False)
+        
+        user_id = None
+        user_name = None
+
+        for field in embed.fields:
+            if field.name == "User id":
+                parts = field.value.split('```')
+                if len(parts) >= 2:
+                    user_id_str = parts[1].strip()
+                    try:
+                        user_id = int(user_id_str)
+                    except ValueError:
+                        break        
+                break
+
+        for field in embed.fields:
+            if field.name == "User name":
+                user_name = field.value.replace('```', '').strip()
+                break
+
+        if user_id:
+            try:
+                user = await interaction.client.fetch_user(user_id)
+                await user.send("🎉 Seu pedido de suporte foi marcado como resolvido!\nObrigado por entrar em contato!")
+            except discord.Forbidden:
+                logger.error(f"Error sending dm to user {user_id} (blocked DM)")
+            except discord.NotFound:
+                print(f"Error sending dm to {user_id} not found")
+
+
         await interaction.message.edit(embed=embed, view=None)
-        await interaction.response.send_message("✅ Pedido resolvido com sucesso!", ephemeral=True)
+        await interaction.response.send_message(f"✅ Pedido resolvido, dm enviada ao {user_name} ({user_id}) !", ephemeral=True)
 
 class VerificationView(View):
     def __init__(self):
