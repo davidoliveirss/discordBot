@@ -62,4 +62,3 @@ async def main():
 
 # Iniciar o bot
 asyncio.run(main())
-

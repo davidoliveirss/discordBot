@@ -115,7 +115,7 @@ class suportQuest(ui.Modal, title="Suport system"):
         try:
             channel = interaction.guild.get_channel(1356301294188363976)
             embed = discord.Embed(
-                title="❗Novo pedido de ajuda",
+                title="❗ Novo pedido de ajuda",
                 color=discord.Color.orange(),
                 timestamp=interaction.created_at
             )
@@ -160,6 +160,7 @@ class SupportButtonView(View):
     @discord.ui.button(label="✅ Resolvido", style=discord.ButtonStyle.success, custom_id="support_resolved")
     async def resolved_callback(self, interaction: discord.Interaction, button: Button):
         embed = interaction.message.embeds[0]
+        embed.title = "✅ Pedido de ajuda resolvido"
         embed.color = discord.Color.green()
         embed.add_field(name="Resolvido por", value=f"{interaction.user.mention}", inline=False)
         
