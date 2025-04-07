@@ -88,7 +88,7 @@ class suportQuest(ui.Modal, title="Suport system"):
         super().__init__(*args, **kwargs)
         self.cooldowns_suport = cooldowns_suport
 
-    name = ui.TextInput(label='Nome', required=False, placeholder="Ex: Alfredo")
+    name = ui.TextInput(label='Nome', required=False, placeholder="ex: Alfredo")
     problem = ui.TextInput(label="Problema", required=True, style=discord.TextStyle.paragraph, placeholder="Descreve o teu problema...")
 
     async def on_submit(self, interaction: discord.Interaction):

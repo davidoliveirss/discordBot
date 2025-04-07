@@ -21,19 +21,16 @@ DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 
 async def load_extensions():
     folders = ["cogs", "core", "utils"]
-    ignore_modules = ["core.database","core.logs"]
+    ignore_folders = ["core","__pycache__","venv","logs"]
 
     for folder in folders:
-        if folder in ["__pycache__", "venv", "logs"]:
+        if folder in ignore_folders:
             logger.info(f"Ignoring the folder: {folder}")
             continue
 
         for path in glob.glob(f"{folder}/**/*.py", recursive=True):
             module_path = os.path.splitext(path)[0]
             module_path = module_path.replace("/", ".").replace("\\", ".")
-
-            if module_path in ignore_modules:
-                continue
 
             if "__init__" in module_path or module_path.startswith("._"):
                 logger.info(f"Ignoring file: {module_path}")
