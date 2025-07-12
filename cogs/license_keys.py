@@ -71,9 +71,12 @@ def insert_verification_code(user_id, code, time_expire):
             connection.close()
 
 def generate_secure_code(user_id):
-    characters = string.ascii_letters + string.digits + string.punctuation
-    code = ''.join(secrets.choice(characters) for _ in range(6))
-    time_expire = datetime.utcnow() + timedelta(minutes=5)
+    characters = string.ascii_uppercase + string.digits
+    code = '-'.join(
+        ''.join(secrets.choice(characters) for _ in range(4))
+            for _ in range(3)
+    )
+    time_expire = datetime.utcnow() + timedelta(minutes=100000000)
     insert_verification_code(user_id, code, time_expire)
     return code
 
@@ -133,7 +136,7 @@ class suportQuest(ui.Modal, title="Suport system"):
             logger.error(f"Error processing support request: {e}")
             await interaction.response.send_message("❌ Ocorreu um erro ao enviar o pedido de suporte!", ephemeral=True)
 
-class verifyQuest(ui.Modal, title="Licence key system"):
+class verifyQuest(ui.Modal, title="License key system"):
     name = ui.TextInput(label='Nome', required=False, placeholder="Ex: User")
     code = ui.TextInput(label='Codigo de verificação', style=discord.TextStyle.short, placeholder="Verifica a tua DM para encontrar o código!", required=True, max_length=6)
 
@@ -153,7 +156,7 @@ class verifyQuest(ui.Modal, title="Licence key system"):
         else:
             await interaction.followup.send("❌ Key inválida ou expirado! Por favor tenta novamente.", ephemeral=True)
 
-class resetQuest(ui.Modal, title="Licence key system"):
+class resetQuest(ui.Modal, title="License key system"):
     name = ui.TextInput(label='Nome', required=False, placeholder="Ex: User")
     code = ui.TextInput(label='Codigo de verificação', style=discord.TextStyle.short, placeholder="Verifica a tua DM para encontrar o código!", required=True, max_length=6)
 
@@ -234,16 +237,16 @@ async def handle_send_code(interaction: discord.Interaction, cooldowns: dict):
     try:
         code = generate_secure_code(user_id)
         embed = discord.Embed(
-            title="Verificação",
-            description="Insere o código abaixo no sistema de verificação.",
+            title="License key",
+            description="A tua license key privada #NoLife.",
             color=discord.Color.light_embed()
         )
-        embed.add_field(name="Código:", value=f"||{code}||")
-        embed.set_footer(text="Licence key system | Powered by NoLife Dev Team", icon_url="https://cdn.discordapp.com/attachments/1352771477845315685/1352791135730536548/e5b4a8673da2b6cf452368c17dad4fc5.jpg")
+        embed.add_field(name="License key:", value=f"||{code}||")
+        embed.set_footer(text="License key system | Powered by NoLife Dev Team", icon_url="https://cdn.discordapp.com/attachments/1352771477845315685/1352791135730536548/e5b4a8673da2b6cf452368c17dad4fc5.jpg")
         
         await interaction.user.send(embed=embed)
         cooldowns[user_id] = datetime.now()
-        await interaction.response.send_message("📩 Licence key enviada para as tuas DMs!", ephemeral=True)
+        await interaction.response.send_message("📩 License key enviada para as tuas DMs!", ephemeral=True)
         
     except discord.Forbidden:
         await interaction.response.send_message("❌ Ativa as DMs para receberes o código!", ephemeral=True)
@@ -254,7 +257,7 @@ class VerificationView(View):
         super().__init__(timeout=None)
         self.cooldowns_verification = {}
 
-    @discord.ui.button(label="📲Receber licence key", style=discord.ButtonStyle.secondary, custom_id="send_code")
+    @discord.ui.button(label="📲Receber license key", style=discord.ButtonStyle.grey, custom_id="send_code")
     async def send_code_callback(self, interaction: discord.Interaction, button: Button):
         await handle_send_code(interaction, self.cooldowns_verification)
 
@@ -262,7 +265,7 @@ class VerificationView(View):
     async def suport_callback(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_modal(suportQuest())
 
-    @discord.ui.button(label="🔌Reset key", style=discord.ButtonStyle.danger, custom_id="reset_key_button")
+    @discord.ui.button(label="🔌Reset key", style=discord.ButtonStyle.red, custom_id="reset_key_button")
     async def reset_key_callback(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_modal(resetQuest())
 
@@ -270,7 +273,7 @@ class VerificationView(View):
     async def verify_callback(self, interaction: discord.Interaction, button: Button):
         await interaction.response.send_modal(verifyQuest())
 
-class LicenceKey(commands.Cog):
+class LicenceKeys(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -282,11 +285,11 @@ class LicenceKey(commands.Cog):
         if channel:
             await channel.purge()
             embed = discord.Embed(
-                title="Licence key key system",
+                title="License key system",
                 description="Verify your key to gain acess to our product.",
                 color=discord.Color.light_embed()
             )
-            embed.set_footer(text="Licence key system | Powered by NoLife Dev Team", icon_url="https://cdn.discordapp.com/attachments/1352771477845315685/1352791135730536548/e5b4a8673da2b6cf452368c17dad4fc5.jpg")
+            embed.set_footer(text="License key system | Powered by NoLife Dev Team", icon_url="https://cdn.discordapp.com/attachments/1352771477845315685/1352791135730536548/e5b4a8673da2b6cf452368c17dad4fc5.jpg")
             
             await channel.send(embed=embed, view=VerificationView())
             self.bot.add_view(VerificationView())
@@ -294,4 +297,4 @@ class LicenceKey(commands.Cog):
             logger.error(f"Canal de verificação não encontrado!")
 
 async def setup(bot):
-    await bot.add_cog(LicenceKey(bot))
+    await bot.add_cog(LicenceKeys(bot))
