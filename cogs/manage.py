@@ -88,7 +88,7 @@ class Manage(commands.Cog):
             viewManage = ManageView()
             await channel.send(embed=embed, view=viewManage)
         else:
-            logger.info(f"⚠️hannel not found {channel_mid}!")
+            logger.info(f"⚠️Channel not found {channel_id}!")
 
         @commands.Cog.listener()
         async def on_guild_update(self, before, after):

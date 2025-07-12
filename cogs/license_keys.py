@@ -58,7 +58,7 @@ def insert_verification_code(user_id, code, time_expire):
         cursor = connection.cursor()
         try:
             query = """
-                INSERT INTO verification_codes (id_user, code, valid, time_created, time_expire)
+                INSERT INTO license_keys(id_user, code, valid, time_created, time_expire)
                 VALUES (%s, %s, %s, NOW(), %s)
             """
             cursor.execute(query, (user_id, code, True, time_expire))
@@ -76,7 +76,7 @@ def generate_secure_code(user_id):
         ''.join(secrets.choice(characters) for _ in range(4))
             for _ in range(3)
     )
-    time_expire = datetime.utcnow() + timedelta(minutes=100000000)
+    time_expire = datetime.utcnow() + timedelta(days=30)
     insert_verification_code(user_id, code, time_expire)
     return code
 
@@ -219,9 +219,34 @@ class SupportButtonView(View):
         await interaction.message.edit(embed=embed, view=None)
         await interaction.response.send_message(f"✅ Pedido resolvido, dm enviada ao {user_name} ({user_id}) !", ephemeral=True)
 
+def user_already_has_key(user_id):
+    connection = create_connection()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            query = """SELECT COUNT(*) FROM license_keys WHERE id_user = %s"""
+            cursor.execute(query, (user_id,))
+            result = cursor.fetchone()
+            return result and result[0] > 0
+        except Error as e:
+            logger.info(f"Erro ao verificar chave existente: {e}")
+        finally:
+            cursor.close()
+            connection.close()
+    return False
+
 async def handle_send_code(interaction: discord.Interaction, cooldowns: dict):
     user_id = interaction.user.id
 
+    # Verificar se o usuário já tem uma key válida
+    if user_already_has_key(user_id):
+        await interaction.response.send_message(
+            "❌ Já tens uma license key.",
+            ephemeral=True
+        )
+        return
+
+    # Verificar cooldown
     if user_id in cooldowns:
         last_time = cooldowns[user_id]
         cooldown = timedelta(minutes=5)
@@ -250,7 +275,6 @@ async def handle_send_code(interaction: discord.Interaction, cooldowns: dict):
         
     except discord.Forbidden:
         await interaction.response.send_message("❌ Ativa as DMs para receberes o código!", ephemeral=True)
-
 
 class VerificationView(View):
     def __init__(self):
