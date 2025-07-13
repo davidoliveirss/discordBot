@@ -13,22 +13,42 @@ logger = get_logger()
 
 cooldowns_suport = {}
 
-def update_code_status(user_id, input_code):
+def update_key_status(user_id, code):
     connection = create_connection()
     if connection:
         cursor = connection.cursor()
         try:
-            query = """UPDATE verification_codes SET valid=0 WHERE code=%s;"""
-            cursor.execute(query, (input_code,))
+            query = """UPDATE license_keys SET valid=1 WHERE code=%s;"""
+            cursor.execute(query, (code,))
             connection.commit()
-            logger.info(f"Status of code {input_code} updated successfully, used by ({user_id}).")
+            logger.info(f"Status of code {code} updated successfully, verified by ({user_id}).")
         except Error as e:
-            logger.info(f"Couldn't update the code {input_code} status: {e}")
+            logger.info(f"Couldn't update the code {code} status: {e}")
             return False
         finally:
             cursor.close()
             connection.close()
     return False
+
+def get_user_id_by_key(code):
+    connection = create_connection()
+    if connection:
+        cursor = connection.cursor()
+        try:
+            query = """SELECT id_user FROM license_keys WHERE code = %s LIMIT 1;"""
+            cursor.execute(query, (code,))
+            result = cursor.fetchone()
+            if result:
+                return result[0]
+            else:
+                return None
+        except Error as e:
+            logger.info(f"Error while searching for user id: {e}")
+            return None
+        finally:
+            cursor.close()
+            connection.close()
+    return None
 
 def check_verification_code(user_id, input_code):
     connection = create_connection()
@@ -148,7 +168,7 @@ class verifyQuest(ui.Modal, title="License key system"):
         await interaction.response.defer(ephemeral=True)
         
         if check_verification_code(user_id, input_code):
-            update_code_status(user_id, input_code)
+            update_key_status(user_id, input_code)
             role_id = 1393321539520299009 #id da role de quem tem o servico
             await give_role(user, role_id)
             await interaction.followup.send("🎉 Key verificada com sucesso, aproveita!", ephemeral=True)
@@ -168,7 +188,7 @@ class resetQuest(ui.Modal, title="License key system"):
         await interaction.response.defer(ephemeral=True)
         
         if check_verification_code(user_id, input_code):
-            update_code_status(user_id, input_code)
+            update_key_status(user_id, input_code)
             role_id = 1393321539520299009 #id da role de quem tem o servico
             await give_role(user, role_id)
             await interaction.followup.send("🎉 Key verificada com sucesso, aproveita!", ephemeral=True)
@@ -235,29 +255,72 @@ def user_already_has_key(user_id):
             connection.close()
     return False
 
+class LicenseApprovalView(View):
+    def __init__(self, code, user_id):
+        super().__init__(timeout=None)
+        self.code = code
+        self.user_id = user_id
+
+    @discord.ui.button(label="✅ Aprovar", style=discord.ButtonStyle.success, custom_id="approve_license")
+    async def approve_callback(self, interaction: discord.Interaction, button: Button):
+        try:
+            update_key_status(self.user_id, self.code)
+            role_id = 1393321539520299009  # ID da role de serviço
+            user_id = get_user_id_by_key(self.code)
+            
+            user = interaction.guild.get_member(user_id) or await interaction.guild.fetch_member(user_id)
+            await give_role(user, role_id)
+            await user.send(f"✅ A tua licença `{self.code}` foi aprovada! Bem-vindo!")
+
+            await interaction.response.send_message("✅ Licença aprovada e role atribuída.", ephemeral=True)
+            await interaction.message.edit(content="🟢 Licença aprovada", view=None)
+        except Exception as e:
+            logger.error(f"Erro ao aprovar licença: {e}")
+            await interaction.response.send_message("❌ Erro ao aprovar licença.", ephemeral=True)
+
+    @discord.ui.button(label="❌ Rejeitar", style=discord.ButtonStyle.danger, custom_id="reject_license")
+    async def reject_callback(self, interaction: discord.Interaction, button: Button):
+        try:
+            user = await interaction.client.fetch_user(self.user_id)
+            await user.send(f"❌ A tua licença `{self.code}` foi rejeitada. Contacta o suporte se achares que é um erro.")
+            await interaction.response.send_message("❌ Licença rejeitada.", ephemeral=True)
+            await interaction.message.edit(content="🔴 Licença rejeitada", view=None)
+        except Exception as e:
+            logger.error(f"Erro ao rejeitar licença: {e}")
+            await interaction.response.send_message("❌ Erro ao rejeitar licença.", ephemeral=True)
+
+async def send_license_to_approval(interaction ,code, user_id):
+
+    try:
+        channel = interaction.guild.get_channel(1393320651611181177)
+                
+        if not channel:
+            logger.error("Canal de aprovação não encontrado.")
+            return
+
+        embed = discord.Embed(
+            title="🔑 Nova license key para aprovação",
+            color=discord.Color.orange(),
+            timestamp=datetime.utcnow()
+        )
+        embed.add_field(name="User ID", value=f"||`{user_id}`||", inline=True)
+        embed.add_field(name="License key", value=f"||{code}||", inline=False)
+        embed.set_footer(text="Sistema de licenças | Powered by NoLife Dev Team")
+
+        view = LicenseApprovalView(code, user_id)
+        await channel.send(embed=embed, view=view)
+        logger.info(f"Pedido de aprovação enviado por ({user_id})")
+
+    except Exception as e:
+        logger.error(f"Erro ao enviar licença para aprovação: {e}")
+
 async def handle_send_code(interaction: discord.Interaction, cooldowns: dict):
     user_id = interaction.user.id
 
     # Verificar se o usuário já tem uma key válida
     if user_already_has_key(user_id):
-        await interaction.response.send_message(
-            "❌ Já tens uma license key.",
-            ephemeral=True
-        )
+        await interaction.response.send_message("❌ Já tens uma license key.",ephemeral=True)
         return
-
-    # Verificar cooldown
-    if user_id in cooldowns:
-        last_time = cooldowns[user_id]
-        cooldown = timedelta(minutes=5)
-        remaining = (last_time + cooldown) - datetime.now()
-        
-        if remaining > timedelta(0):
-            await interaction.response.send_message(
-                f"⏳ Aguarda {remaining.seconds//60} minutos para pedir novo código.",
-                ephemeral=True
-            )
-            return
 
     try:
         code = generate_secure_code(user_id)
@@ -268,9 +331,8 @@ async def handle_send_code(interaction: discord.Interaction, cooldowns: dict):
         )
         embed.add_field(name="License key:", value=f"||{code}||")
         embed.set_footer(text="License key system | Powered by NoLife Dev Team", icon_url="https://cdn.discordapp.com/attachments/1352771477845315685/1352791135730536548/e5b4a8673da2b6cf452368c17dad4fc5.jpg")
-        
+        await send_license_to_approval(interaction,code,user_id)
         await interaction.user.send(embed=embed)
-        cooldowns[user_id] = datetime.now()
         await interaction.response.send_message("📩 License key enviada para as tuas DMs!", ephemeral=True)
         
     except discord.Forbidden:
