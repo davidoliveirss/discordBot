@@ -10,9 +10,7 @@ Um bot para o Discord feito em Python, que usa uma base de dados MySQL para guar
 - [O que precisas](#o-que-precisas)
 - [Como instalar](#como-instalar)
 - [Como configurar](#como-configurar)
-- [Como usar](#como-usar)
-- [Contribuir](#contribuir)
-- [Licença](#licença)
+- [Contribuir](https://discord.gg/RZZRnVnbgt)
 
 ---
 
@@ -32,14 +30,25 @@ Está organizado em módulos para ser fácil de manter.
 - Um servidor MySQL (pode ser local ou remoto)  
 - Git para clonar o projeto  
 - Pip para instalar pacotes
+- Não seres um nabo
 
 ---
 
 ## Como instalar
 
-1. Clona o projeto para o teu computador:
+Clona o projeto para o teu computador:
 
 ```bash
 git clone https://github.com/davidoliveirss/discordBot.git
 cd discordBot
+pip install -r requirements.txt
+python bot.py```
+
+---
+
+## Como configurar
+
+1. Coloca as tuas cpmfogirações no ficheiro .env
+2. Muda os ids das tags e dos canais nos respetivos ficheiros
+
 
