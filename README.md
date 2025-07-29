@@ -1,45 +1,43 @@
 # discordBot
 
-![Bot Status](https://img.shields.io/badge/status-active-brightgreen) ![Python Version](https://img.shields.io/badge/python-3.13-blue) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
-
-Um bot para Discord escrito em Python, com integração a MySQL para gestão de dados e suporte a funcionalidades diversas.
+Um bot para o Discord feito em Python, que usa uma base de dados MySQL para guardar informações e tem várias funcionalidades.
 
 ---
 
-## 📋 Índice
+## Índice
 
-- [Características](#-características)
-- [Pré-requisitos](#-pré-requisitos)
-- [Instalação](#-instalação)
-- [Configuração](#-configuração)
-- [Uso](#-uso)
-- [Contribuição](#-contribuição)
-- [Licença](#-licença)
-
----
-
-## 🚀 Características
-
-- Comandos e eventos personalizados para Discord usando `discord.py`
-- Integração com base de dados MySQL para armazenamento persistente
-- Suporte a variáveis de ambiente para segurança das credenciais
-- Suporte a funcionalidades de voz (opcional, requer PyNaCl)
-- Arquitetura modular usando extensões (cogs)
+- [O que é](#o-que-é)
+- [O que precisas](#o-que-precisas)
+- [Como instalar](#como-instalar)
+- [Como configurar](#como-configurar)
+- [Como usar](#como-usar)
+- [Contribuir](#contribuir)
+- [Licença](#licença)
 
 ---
 
-## ⚙️ Pré-requisitos
+## O que é
 
-- Python 3.13+
-- MySQL Server (local ou remoto)
-- Git (para clonar o projeto)
-- Pip
+Este bot é feito em Python com a biblioteca `discord.py`.  
+Guarda dados numa base de dados MySQL.  
+Tem suporte para comandos e eventos no Discord.  
+Pode funcionar com voz (se instalares o PyNaCl).  
+Está organizado em módulos para ser fácil de manter.
 
 ---
 
-## 💻 Instalação
+## O que precisas
 
-1. Clona o repositório:
+- Python 3.13 ou superior  
+- Um servidor MySQL (pode ser local ou remoto)  
+- Git para clonar o projeto  
+- Pip para instalar pacotes
+
+---
+
+## Como instalar
+
+1. Clona o projeto para o teu computador:
 
 ```bash
 git clone https://github.com/davidoliveirss/discordBot.git
